@@ -1,0 +1,81 @@
+<resources>
+    <string name="app_name">RSOrganiser</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+    <!-- Names -->
+    <string-array name="event_names">
+        <item>Charity Committee Meeting</item>
+        <item>House Music Practice</item>
+        <item>Philosophy Club</item>
+        <item>Prefect Meeting</item>
+        <item>Animation Club</item>
+        <item>Example School Event</item>
+        <item>Example School Event</item>
+        <item>Example School Event</item>
+        <item>Example School Event</item>
+        <item>Example School Event</item>
+        <item>Example School Event</item>
+    </string-array>
+
+    <!-- Pictures -->
+    <array name="event_icons">
+        <item>@drawable/school_logo</item>
+        <item>@drawable/school_house_music</item>
+        <item>@drawable/aristotle</item>
+        <item>@drawable/school_logo</item>
+        <item>@drawable/animation</item>
+        <item>@drawable/school_logo</item>
+        <item>@drawable/school_logo</item>
+        <item>@drawable/school_logo</item>
+        <item>@drawable/school_logo</item>
+        <item>@drawable/school_logo</item>
+        <item>@drawable/school_logo</item>
+    </array>
+
+    <array name="organisation_icons">
+        <item>@drawable/school_logo</item>
+        <item>@drawable/school_house_music</item>
+        <item>@drawable/aristotle</item>
+        <item>@drawable/school_logo</item>
+        <item>@drawable/animation</item>
+        <item>@drawable/school_logo</item>
+        <item>@drawable/school_logo</item>
+        <item>@drawable/school_logo</item>
+        <item>@drawable/school_logo</item>
+        <item>@drawable/school_logo</item>
+        <item>@drawable/school_logo</item>
+    </array>
+
+    <!-- Status -->
+    <string-array name="organisations">
+        <item>Charity Committee</item>
+        <item>School House Music</item>
+        <item>Philosophy Club</item>
+        <item>RS Prefect Team</item>
+        <item>Animation Club</item>
+        <item>Organisation</item>
+        <item>Organisation</item>
+        <item>Organisation</item>
+        <item>Organisation</item>
+        <item>Organisation</item>
+        <item>Organisation</item>
+
+    </string-array>
+
+    <!-- contact type -->
+    <string-array name="time">
+        <item>12:50</item>
+        <item>12:50</item>
+        <item>12:50</item>
+        <item>12:50</item>
+        <item>12:50</item>
+        <item>12:50</item>
+        <item>12:50</item>
+        <item>12:50</item>
+        <item>12:50</item>
+        <item>12:50</item>
+        <item>12:50</item>
+    </string-array>
+
+</resources>
