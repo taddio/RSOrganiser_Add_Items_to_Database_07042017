@@ -2,7 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.android.rsorganiser_add_items_to_database_26022017">
 
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+
     <application
+        android:hardwareAccelerated="false"
+        android:screenOrientation="portrait"
+        android:largeHeap="true"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -18,6 +23,34 @@
         <activity
             android:name=".EventFormActivity"
             android:label="Add Event Details"
+            android:theme="@style/EditorTheme"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity"/>
+        </activity>
+        <activity
+            android:name=".OrganisationFormActivity"
+            android:label="Add Organisation Details"
+            android:theme="@style/EditorTheme"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity"/>
+        </activity>
+
+        <activity
+            android:name=".EventDescription"
+            android:label="Event Description"
+            android:theme="@style/EditorTheme"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity"/>
+        </activity>
+        <activity
+            android:name=".OrganisationDescription"
+            android:label="Organisation Description"
             android:theme="@style/EditorTheme"
             android:parentActivityName=".MainActivity">
             <meta-data

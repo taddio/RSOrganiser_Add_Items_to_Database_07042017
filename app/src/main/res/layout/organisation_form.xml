@@ -8,7 +8,7 @@
     android:orientation="vertical"
     android:padding="16dp"
     android:background="#ffffff"
-    tools:context=".EventFormActivity">
+    tools:context=".OrganisationFormActivity">
 
     <!-- Overview category -->
     <LinearLayout
@@ -18,7 +18,7 @@
 
         <!-- Label -->
         <TextView
-            android:text="Event Name"
+            android:text="Organisation Name"
             style="@style/CategoryStyle" />
 
 
@@ -34,54 +34,6 @@
 
     </LinearLayout>
 
-    <!-- Gender category -->
-    <LinearLayout
-        android:id="@+id/edit_organisation_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <!-- Label -->
-        <TextView
-            android:text="Organisation"
-            style="@style/CategoryStyle" />
-
-        <!-- Input field -->
-
-            <!-- Gender drop-down spinner -->
-        <Spinner
-            android:id="@+id/spinner_organisations"
-            android:layout_height="wrap_content"
-            android:layout_width="0dp"
-            android:layout_weight="2"
-            android:paddingRight="16dp"
-            android:spinnerMode="dropdown"/>
-    </LinearLayout>
-
-    <!-- Measurement category -->
-    <LinearLayout
-        android:id="@+id/edit_datetime"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <!-- Label -->
-        <TextView
-            android:text="Date/Time"
-            style="@style/CategoryStyle" />
-
-
-            <!-- Weight field -->
-        <Button
-            android:id="@+id/edit_datetime_button"
-            android:hint="Pick Date"
-            android:layout_height="wrap_content"
-            android:layout_width="0dp"
-            android:layout_weight="2"
-            android:paddingRight="16dp"
-            style="@style/EditorFieldStyle" />
-
-    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -90,7 +42,7 @@
 
         <!-- Label -->
         <TextView
-            android:text="Event Description"
+            android:text="Organisation Description"
             style="@style/CategoryStyle" />
 
 
@@ -100,7 +52,7 @@
             android:layout_weight="2"
             android:paddingLeft="4dp"
             android:id="@+id/edit_organisation_description"
-            android:hint="Description of event"
+            android:hint="Description of organisation"
             android:inputType="textMultiLine"
             android:lines="8"
             android:scrollbars="vertical"
@@ -120,8 +72,7 @@
             android:text="Image"
             style="@style/CategoryStyle" />
 
-
-        <!-- Weight field -->
+        <!-- Image Button -->
         <Button
             android:id="@+id/edit_image_button"
             android:hint="Insert Image"

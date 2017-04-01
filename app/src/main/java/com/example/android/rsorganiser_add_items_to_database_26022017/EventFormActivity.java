@@ -6,14 +6,11 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,11 +25,8 @@ import android.widget.Toast;
 
 import com.example.android.rsorganiser_add_items_to_database_26022017.Data.DbHelper;
 import com.example.android.rsorganiser_add_items_to_database_26022017.Data.EventsContract;
-import com.example.android.rsorganiser_add_items_to_database_26022017.Data.ImageConversion;
 import com.example.android.rsorganiser_add_items_to_database_26022017.Data.OrganisationsContract;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -57,9 +51,11 @@ public class EventFormActivity extends AppCompatActivity implements
 
     byte[] imageInputData;
 
+    String imageInputPath;
+
     int day, month, year, hour, minute;
 
-    int dayFinal, monthFinal, yearFinal, hourFinal, minuteFinal;
+    String dayFinal, monthFinal, yearFinal, hourFinal, minuteFinal;
 
     int organisationID;
 
@@ -69,8 +65,8 @@ public class EventFormActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.event_form);
 
-        mNameEditText = (EditText) findViewById(R.id.edit_event_name);
-        mDescriptionEditText = (EditText) findViewById(R.id.edit_event_description);
+        mNameEditText = (EditText) findViewById(R.id.edit_organisation_name);
+        mDescriptionEditText = (EditText) findViewById(R.id.edit_organisation_description);
         mDateTimeButton = (Button) findViewById(R.id.edit_datetime_button);
         mImageButton = (Button) findViewById(R.id.edit_image_button);
         mOrganisationSpinner = (Spinner) findViewById(R.id.spinner_organisations);
@@ -130,8 +126,7 @@ public class EventFormActivity extends AppCompatActivity implements
            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                String label = parent.getItemAtPosition(position).toString();
                Toast.makeText(parent.getContext(), "You selected: " + label + "at position #" + position, Toast.LENGTH_LONG).show();
-               organisationID = position + 1;
-               return;
+               organisationID = position;
            }
 
            @Override
@@ -163,9 +158,16 @@ public class EventFormActivity extends AppCompatActivity implements
 
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-        yearFinal = year;
-        monthFinal = month + 1;
-        dayFinal = dayOfMonth;
+        yearFinal = "" + year;
+        if((month + 1) < 10) {
+            monthFinal = "0" + month;
+        }
+        else monthFinal = "" + (month + 1);
+
+        if(dayOfMonth < 10) {
+            dayFinal = "0" + dayOfMonth;
+        }
+        else dayFinal = "" + dayOfMonth;
 
         Calendar calendar = Calendar.getInstance();
         hour = calendar.get(Calendar.HOUR_OF_DAY);
@@ -178,8 +180,15 @@ public class EventFormActivity extends AppCompatActivity implements
 
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        hourFinal = hourOfDay;
-        minuteFinal = minute;
+        if(hourOfDay < 10){
+            hourFinal = "0" + hourOfDay;
+        }
+        else hourFinal = "" + hourOfDay;
+
+        if(minute < 10) {
+            minuteFinal = "0" + minute;
+        }
+        else minuteFinal = "" + minute;
 
         Toast.makeText(this, yearFinal + "-" + monthFinal + "-" + dayFinal + " " + hourFinal + ":" + minuteFinal, Toast.LENGTH_LONG).show();
 
@@ -208,24 +217,11 @@ public class EventFormActivity extends AppCompatActivity implements
 
                 if (null != selectedImageUri) {
 
-                    convertImageData(selectedImageUri);
+                    imageInputPath = selectedImageUri.toString();
                     }
                 }
             }
         }
-
-    void convertImageData(Uri selectedImageUri) {
-
-        try {
-            InputStream iStream = getContentResolver().openInputStream(selectedImageUri);
-            imageInputData = ImageConversion.getBytes(iStream);
-
-        }
-        catch (IOException ioe) {
-            Log.e("EventFormActivity", "<saveImageInDB> Error : " + ioe.getLocalizedMessage());
-        }
-
-    }
 
     private void insertEvent() {
 
@@ -233,10 +229,6 @@ public class EventFormActivity extends AppCompatActivity implements
         String descriptionString = mDescriptionEditText.getText().toString().trim();
         String datetimeString = yearFinal + "-" + monthFinal + "-" + dayFinal + " " + hourFinal + ":" + minuteFinal;
 
-        if (imageInputData == null) {
-            Bitmap iconResource = BitmapFactory.decodeResource(getResources(), com.example.android.rsorganiser_add_items_to_database_26022017.R.drawable.school_logo);
-            imageInputData = ImageConversion.getImageBytes(iconResource);
-        }
 
 
         // Gets the database in write mode
@@ -244,16 +236,15 @@ public class EventFormActivity extends AppCompatActivity implements
 
 
         // Create a ContentValues object where column names are the keys,
-        // and Toto's pet attributes are the values.
         ContentValues values = new ContentValues();
         values.put(COLUMN_EVENT_NAME, nameString);
-        values.put(EventsContract.EventEntry.COLUMN_EVENT_ICON, imageInputData);
+        values.put(EventsContract.EventEntry.COLUMN_EVENT_ICON, imageInputPath);
         values.put(EventsContract.EventEntry.COLUMN_EVENT_DATE, datetimeString);
         values.put(EventsContract.EventEntry.COLUMN_EVENT_DESCRIPTION, descriptionString);
-        values.put(EventsContract.EventEntry.COLUMN_ORGANISATION_ID, organisationID);
+        values.put(EventsContract.EventEntry.COLUMN_ORGANISATION_ID, (organisationID+1));
 
-        // Insert a new row for Toto in the database, returning the ID of that new row.
-        // The first argument for db.insert() is the pets table name.
+        // Insert a new row in the database, returning the ID of that new row.
+        // The first argument for db.insert() is the table name.
         // The second argument provides the name of a column in which the framework
         long newRowId = db.insert(EventsContract.EventEntry.TABLE_NAME, null, values);
     }
@@ -272,14 +263,12 @@ public class EventFormActivity extends AppCompatActivity implements
         switch (item.getItemId()) {
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
-                // Save pet to database
+                // Save event to database
                 insertEvent();
                 // Exit activity
+                Intent intent = new Intent(this, MainActivity.class);
+                this.startActivity(intent);
                 finish();
-                return true;
-
-            case R.id.action_delete:
-                // Do nothing for now
                 return true;
 
             case android.R.id.home:

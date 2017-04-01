@@ -1,19 +1,21 @@
 package com.example.android.rsorganiser_add_items_to_database_26022017;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ListFragment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
@@ -23,10 +25,13 @@ import com.example.android.rsorganiser_add_items_to_database_26022017.Data.Event
 import com.example.android.rsorganiser_add_items_to_database_26022017.Data.ImageConversion;
 import com.example.android.rsorganiser_add_items_to_database_26022017.Data.OrganisationsContract.OrganisationEntry;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Handler;
 
-import static com.example.android.rsorganiser_add_items_to_database_26022017.Data.EventsContract.EventEntry.COLUMN_EVENT_NAME;
+import static com.example.android.rsorganiser_add_items_to_database_26022017.R.layout.events;
 
 public class Events extends ListFragment {
 
@@ -34,9 +39,18 @@ public class Events extends ListFragment {
     List<byte[]> event_icons = new ArrayList<byte[]>();
     ArrayList<String> organisations = new ArrayList<String>();
     ArrayList<String> datetime = new ArrayList<String>();
+    ArrayList<String> eventIds = new ArrayList<String>();
     List<RowItem> rowItems;
     int listLength;
     ListView mylistview;
+    int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 125;
+    private boolean shouldRefreshOnResume = false;
+    boolean itemClicked;
+    int itemPosition;
+    ListView list;
+    View view;
+    long ID;
+    Handler myHandler;
 
     // Database Helper that will provide us access to the database
     private DbHelper mDbHelper;
@@ -44,7 +58,7 @@ public class Events extends ListFragment {
     @Override
     public View onCreateView(LayoutInflater inflater,
                              @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(com.example.android.rsorganiser_add_items_to_database_26022017.R.layout.events, container, false);
+        View v = inflater.inflate(events, container, false);
 
         //Setup FAB to open database input form
         FloatingActionButton fab = (FloatingActionButton) v.findViewById(R.id.fab);
@@ -69,6 +83,24 @@ public class Events extends ListFragment {
 
         rowItems = new ArrayList<RowItem>();
 
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (shouldShowRequestPermissionRationale(
+                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                // Explain to the user why we need to read the contacts
+            }
+
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+
+            // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
+            // app-defined int constant that should be quite unique
+
+            return;
+        }
+
         //Create and/or open a database to read from it
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
@@ -85,6 +117,7 @@ public class Events extends ListFragment {
 
         //Define a projection that specifies which columns from the databse you will actually use for this query
         String[] projection = {
+                EventEntry.TABLE_NAME + "." + EventEntry._ID,
                 EventEntry.TABLE_NAME + "." + EventEntry.COLUMN_EVENT_NAME,
                 EventEntry.COLUMN_EVENT_DATE,
                 EventEntry.TABLE_NAME + "." + EventEntry.COLUMN_EVENT_ICON,
@@ -98,26 +131,39 @@ public class Events extends ListFragment {
                 null,                           //Values for the where clause
                 null,                           //Don't group the rows
                 null,                           //Don't filter by row groups
-                null);    //Sort order
+                EventEntry.COLUMN_EVENT_DATE + " ASC");    //Sort order
 
         try {
-            int nameColumnIndex = cursor.getColumnIndex(COLUMN_EVENT_NAME);
-            int dateColumnIndex = cursor.getColumnIndex(EventEntry.COLUMN_EVENT_DATE);
-            int iconColumnIndex = cursor.getColumnIndex(EventEntry.COLUMN_EVENT_ICON);
-            int organisationColumnIndex = cursor.getColumnIndex(OrganisationEntry.COLUMN_ORGANISATION_NAME);
-            
 
-            while(cursor.moveToNext()) {
-                String currentName = cursor.getString(nameColumnIndex);
-                String currentDate = cursor.getString(dateColumnIndex);
-                String currentOrganisation = cursor.getString(organisationColumnIndex);
-                byte[] currentIcon = cursor.getBlob(iconColumnIndex);
+            if(cursor.moveToFirst()) {
+                do {
+                    byte[] currentIcon = null;
+                    String currentID = cursor.getString(0);
+                    String currentName = cursor.getString(1);
+                    String currentDate = cursor.getString(2);
+                    String currentIconPathString = cursor.getString(3);
+                    String currentOrganisation = cursor.getString(4);
+
+                    if(currentIconPathString != null) {
+                        Uri currentIconPathUri = Uri.parse(currentIconPathString);
 
 
-                event_names.add(currentName);
-                datetime.add(currentDate);
-                organisations.add(currentOrganisation);
-                event_icons.add(currentIcon);
+                        try {
+                            InputStream iStream = getContext().getContentResolver().openInputStream(currentIconPathUri);
+                            currentIcon = ImageConversion.getBytes(iStream);
+
+                        } catch (IOException ioe) {
+                            Log.e("EventFormActivity", "<saveImageInDB> Error : " + ioe.getLocalizedMessage());
+                        }
+                    }
+
+                    eventIds.add(currentID);
+                    Log.v("event id", currentID);
+                    event_names.add(currentName);
+                    datetime.add(currentDate);
+                    organisations.add(currentOrganisation);
+                    event_icons.add(currentIcon);
+                }while(cursor.moveToNext());
             }
 
         } finally {
@@ -132,8 +178,12 @@ public class Events extends ListFragment {
 
         listLength = event_names.size();
         for (int i = 0; i < listLength; i++) {
-            Log.v("Counter", Integer.toString(i));
-            Bitmap icon = ImageConversion.getImage(event_icons.get(i));
+
+            Bitmap icon = null;
+
+            if(event_icons.get(i) != null){
+                icon = ImageConversion.getImage(event_icons.get(i));
+            }
 
             RowItem item = new RowItem(event_names.get(i),
                     icon, organisations.get(i),
@@ -146,16 +196,17 @@ public class Events extends ListFragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        getActivity().getMenuInflater().inflate(com.example.android.rsorganiser_add_items_to_database_26022017.R.menu.menu_main, menu);
+    public void onListItemClick(ListView l, View v, int pos, long id) {
+        super.onListItemClick(l, v, pos, id);
+        int eventPosition = Integer.parseInt(eventIds.get(pos));
+        Log.v("Click position", "" + pos);
+        Log.v("event ID", eventIds.get(pos));
+        Intent intent = new Intent(getActivity(), EventDescription.class);
+        intent.putExtra("position", eventPosition);
+        startActivity(intent);
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
+
 
     /** private void insertEvent() {
 

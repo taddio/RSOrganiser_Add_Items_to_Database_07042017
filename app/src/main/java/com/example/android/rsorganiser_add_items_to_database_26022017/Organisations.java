@@ -2,31 +2,35 @@ package com.example.android.rsorganiser_add_items_to_database_26022017;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.example.android.rsorganiser_add_items_to_database_26022017.Data.DbHelper;
 import com.example.android.rsorganiser_add_items_to_database_26022017.Data.ImageConversion;
-import com.example.android.rsorganiser_add_items_to_database_26022017.Data.OrganisationsContract;
 import com.example.android.rsorganiser_add_items_to_database_26022017.Data.OrganisationsContract.OrganisationEntry;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Organisations extends ListFragment {
 
     ArrayList<String> organisations = new ArrayList<String>();
+    ArrayList<String> organisationIds = new ArrayList<String>();
     List<byte[]> organisation_icons = new ArrayList<byte[]>();
     List<OrganisationRowItem> organisationRowItems;
     int listLength;
@@ -40,10 +44,18 @@ public class Organisations extends ListFragment {
                              @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(com.example.android.rsorganiser_add_items_to_database_26022017.R.layout.organisations, container, false);
 
+        //Setup FAB to open database input form
+        FloatingActionButton fab = (FloatingActionButton) v.findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getActivity(), OrganisationFormActivity.class);
+                startActivity(intent);
+            }
+        });
+
         Context myContext = getActivity();
         mDbHelper = new DbHelper(myContext);
-        insertOrganisation();
-
         return v;
     }
 
@@ -58,8 +70,9 @@ public class Organisations extends ListFragment {
 
         //Define a projection that specifies which columns from the databse you will actually use for this query
         String[] projection = {
-                OrganisationsContract.OrganisationEntry.COLUMN_ORGANISATION_NAME,
-                OrganisationsContract.OrganisationEntry.COLUMN_ORGANISATION_ICON};
+                OrganisationEntry._ID,
+                OrganisationEntry.COLUMN_ORGANISATION_NAME,
+                OrganisationEntry.COLUMN_ORGANISATION_ICON};
 
         //Perform a query on the events table
         Cursor cursor = db.query(
@@ -69,32 +82,53 @@ public class Organisations extends ListFragment {
                 null,                   //Values for the where clause
                 null,                   //Don't group the rows
                 null,                   //Don't filter by row groups
-                null);                  //Sort order
+                OrganisationEntry.COLUMN_ORGANISATION_NAME + " ASC");                  //Sort order
 
         try {
-            int nameColumnIndex = cursor.getColumnIndex(OrganisationsContract.OrganisationEntry.COLUMN_ORGANISATION_NAME);
-            int iconColumnIndex = cursor.getColumnIndex(OrganisationsContract.OrganisationEntry.COLUMN_ORGANISATION_ICON);
 
-            while(cursor.moveToNext()) {
-                String currentName = cursor.getString(nameColumnIndex);
-                byte[] currentIcon = cursor.getBlob(iconColumnIndex);
+            if(cursor.moveToFirst()) {
+                do {
+                    byte[] currentIcon = null;
+                    String currentID = cursor.getString(0);
+                    String currentName = cursor.getString(1);
+                    String currentIconPathString = cursor.getString(2);
+
+                    if(currentIconPathString != null) {
+                        Uri currentIconPathUri = Uri.parse(currentIconPathString);
 
 
-                organisations.add(currentName);
-                organisation_icons.add(currentIcon);
-            }
+                        try {
+                            InputStream iStream = getContext().getContentResolver().openInputStream(currentIconPathUri);
+                            currentIcon = ImageConversion.getBytes(iStream);
+
+                        } catch (IOException ioe) {
+                            Log.e("EventFormActivity", "<saveImageInDB> Error : " + ioe.getLocalizedMessage());
+                        }
+                    }
+
+                    organisationIds.add(currentID);
+                    Log.v("event id", currentID);
+                    organisations.add(currentName);
+                    organisation_icons.add(currentIcon);
+                }while(cursor.moveToNext());
+                }
+
 
         } finally {
             //Close cursor releasing all its resources and making it invalid
             cursor.close();
         }
 
+
         //organisations = getResources().getStringArray(R.array.organisations);
         //organisation_icons = getResources().obtainTypedArray(organisation_icons);
 
         listLength = organisations.size();
         for (int i = 0; i < listLength; i++) {
-            Bitmap icon = ImageConversion.getImage(organisation_icons.get(i));
+            Bitmap icon = null;
+            if(organisation_icons.get(i) != null) {
+                icon = ImageConversion.getImage(organisation_icons.get(i));
+            }
 
             OrganisationRowItem item = new OrganisationRowItem(organisations.get(i),
                     icon);
@@ -106,16 +140,16 @@ public class Organisations extends ListFragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        getActivity().getMenuInflater().inflate(com.example.android.rsorganiser_add_items_to_database_26022017.R.menu.menu_main, menu);
+    public void onListItemClick(ListView l, View v, int pos, long id) {
+        super.onListItemClick(l, v, pos, id);
+        int organisationPosition = Integer.parseInt(organisationIds.get(pos));
+        Log.v("Click position", "" + pos);
+        Log.v("organisation ID", organisationIds.get(pos));
+        Intent intent = new Intent(getActivity(), OrganisationDescription.class);
+        intent.putExtra("position", organisationPosition);
+        startActivity(intent);
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
 
     private void insertOrganisation() {
 
@@ -141,4 +175,5 @@ public class Organisations extends ListFragment {
         // The third argument is the ContentValues object containing the info for Toto.
         long newRowId = db.insert(OrganisationEntry.TABLE_NAME, null, values);
     }
+
 }

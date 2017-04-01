@@ -25,7 +25,6 @@ public class EventAdapter extends BaseAdapter {
     @Override
     public int getCount() {
         String rowItemsSize = Integer.toString(rowItems.size());
-        Log.v("Row Item Size", rowItemsSize);
         return rowItems.size();
     }
 
@@ -61,9 +60,9 @@ public class EventAdapter extends BaseAdapter {
             holder = new ViewHolder();
 
             holder.event_name = (TextView) convertView
-                    .findViewById(com.example.android.rsorganiser_add_items_to_database_26022017.R.id.event_name);
+                    .findViewById(com.example.android.rsorganiser_add_items_to_database_26022017.R.id.name);
             holder.event_icon = (ImageView) convertView
-                    .findViewById(com.example.android.rsorganiser_add_items_to_database_26022017.R.id.event_icon);
+                    .findViewById(com.example.android.rsorganiser_add_items_to_database_26022017.R.id.icon);
             holder.organisation = (TextView) convertView
                     .findViewById(com.example.android.rsorganiser_add_items_to_database_26022017.R.id.organisation);
             holder.time = (TextView) convertView
@@ -78,11 +77,18 @@ public class EventAdapter extends BaseAdapter {
 
         RowItem row_pos = rowItems.get(position);
 
-        holder.event_icon.setImageBitmap(row_pos.getEvent_icon());
+        if(row_pos.getEvent_icon() == null) {
+            holder.event_icon.setImageResource(R.drawable.school_logo);
+        }
+        else if(row_pos.getEvent_icon() != null){
+            holder.event_icon.setImageBitmap(row_pos.getEvent_icon());
+        }
+
         holder.event_name.setText(row_pos.getEvent_name());
         holder.organisation.setText(row_pos.getOrganisation());
         holder.time.setText(row_pos.getTime());
 
         return convertView;
     }
+
 }

@@ -6,19 +6,20 @@
     android:paddingRight="8dp" >
 
     <ImageView
-        android:id="@+id/event_icon"
+        android:id="@+id/icon"
         android:layout_width="70dp"
         android:layout_height="70dp"
-        android:contentDescription="desc"
+        android:contentDescription="image"
         android:paddingLeft="10dp"
         android:paddingRight="10dp" />
 
     <TextView
-        android:id="@+id/event_name"
+        android:id="@+id/name"
+        android:layout_toLeftOf="@+id/time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:layout_toRightOf="@+id/event_icon"
+        android:layout_toRightOf="@+id/icon"
         android:paddingBottom="10dp"
         android:text="txt"
         android:textColor="#000000"
@@ -28,18 +29,19 @@
         android:id="@+id/organisation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/event_name"
-        android:layout_below="@+id/event_name"
+        android:layout_alignLeft="@+id/name"
+        android:layout_below="@+id/name"
         android:text="txt"
         android:textColor="#000000"
         android:textSize="16sp" />
 
     <TextView
         android:id="@+id/time"
+        android:maxLines="1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/event_name"
-        android:layout_alignBottom="@+id/event_name"
+        android:layout_alignBaseline="@+id/name"
+        android:layout_alignBottom="@+id/name"
         android:layout_alignParentRight="true"
         android:text="txt"
         android:textColor="#000000"

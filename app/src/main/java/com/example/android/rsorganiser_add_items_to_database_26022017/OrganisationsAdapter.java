@@ -26,7 +26,6 @@ public class OrganisationsAdapter extends BaseAdapter {
     @Override
     public int getCount() {
         String rowItemsSize = Integer.toString(organisationRowItems.size());
-        Log.v("Row Item Size", rowItemsSize);
         return organisationRowItems.size();
     }
 
@@ -71,7 +70,13 @@ public class OrganisationsAdapter extends BaseAdapter {
 
         OrganisationRowItem row_pos = organisationRowItems.get(position);
 
-        holder.organisation_icon.setImageBitmap(row_pos.getOrganisation_icon());
+        if(row_pos.getOrganisation_icon() == null) {
+            holder.organisation_icon.setImageResource(R.drawable.school_logo);
+        }
+        else if(row_pos.getOrganisation_icon() != null){
+            holder.organisation_icon.setImageBitmap(row_pos.getOrganisation_icon());
+        }
+
         holder.organisations.setText(row_pos.getOrganisations());
 
         return convertView;

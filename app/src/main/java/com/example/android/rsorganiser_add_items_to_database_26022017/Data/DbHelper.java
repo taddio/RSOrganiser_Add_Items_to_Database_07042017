@@ -40,7 +40,7 @@ public class DbHelper extends SQLiteOpenHelper {
         String SQL_CREATE_EVENTS_TABLE =  "CREATE TABLE " + EventEntry.TABLE_NAME + " ("
                 + EventEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + EventEntry.COLUMN_EVENT_NAME + " TEXT NOT NULL, "
-                + EventEntry.COLUMN_EVENT_ICON + " BLOB, "
+                + EventEntry.COLUMN_EVENT_ICON + " TEXT, "
                 + EventEntry.COLUMN_EVENT_DATE + " TEXT NOT NULL, "
                 + EventEntry.COLUMN_EVENT_DESCRIPTION + " TEXT, "
                 + EventEntry.COLUMN_ORGANISATION_ID + " INTEGER, "
@@ -49,12 +49,18 @@ public class DbHelper extends SQLiteOpenHelper {
         String SQL_CREATE_ORGANISATIONS_TABLE =  "CREATE TABLE " + OrganisationEntry.TABLE_NAME + " ("
                 + OrganisationEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + OrganisationEntry.COLUMN_ORGANISATION_NAME + " TEXT NOT NULL, "
-                + OrganisationEntry.COLUMN_ORGANISATION_ICON + " BLOB, "
+                + OrganisationEntry.COLUMN_ORGANISATION_ICON + " TEXT, "
                 + OrganisationEntry.COLUMN_ORGANISATION_DESCRIPTION + " TEXT);";
 
         // Execute the SQL statement
         db.execSQL(SQL_CREATE_ORGANISATIONS_TABLE);
         db.execSQL(SQL_CREATE_EVENTS_TABLE);
+        db.execSQL("INSERT INTO " + OrganisationEntry.TABLE_NAME + "(" +
+                        OrganisationEntry.COLUMN_ORGANISATION_NAME + ", " +
+                        OrganisationEntry.COLUMN_ORGANISATION_ICON + ", " +
+                        OrganisationEntry.COLUMN_ORGANISATION_DESCRIPTION + ")" +
+                        " VALUES (?, null, ?)", new String[]{"Reading School", "Default Reading School Organisation"} );
+
     }
 
     /**
